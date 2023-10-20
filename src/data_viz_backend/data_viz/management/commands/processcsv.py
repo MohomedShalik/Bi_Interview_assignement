@@ -1,46 +1,30 @@
 from django.core.management.base import BaseCommand
-
-
 import zipfile
 import pandas as pd 
 from sqlite3 import connect
 import os
 import pathlib
-from dotenv import load_dotenv
+
 
 
 class Command(BaseCommand):
 
-    # def add_arguments(self, parser):
-    #     parser.add_argument("zip_file_path", type=str)
 
     def handle(self , *args , **options):
-        dotenv_path = pathlib.Path('.env')
-        load_dotenv(dotenv_path=dotenv_path)
 
-        zipfile_path = os.getenv('ZIP_FILE_PATH')
-        print(zipfile_path)
-
-        sp = os.path.join(os.path.expanduser("~/") , zipfile_path)
-        print(sp)
-        if (os.path.exists(sp)):
-            print("file exist")
 
         tmp_dir_path = os.path.join(os.getcwd(), "tmp")
-        # interview_dataset_path = os.path.join(tmp_dir_path,"interview_dataset.zip")
-        # interview_dataset_path = pathlib.Path(options["zip_file_path"])
-
-        interview_dataset_path = zipfile_path
-        print(interview_dataset_path)
+        arch_dir_path = os.path.join(os.getcwd(), "archives")
+        interview_dataset_path = os.path.join(tmp_dir_path,"Interview_dataset.zip")
         csv_dataset_path = os.path.join(tmp_dir_path,"Ganison_dataset")
-        print(interview_dataset_path)
 
-        if (not os.path.exists(tmp_dir_path)):
-            os.makedirs(tmp_dir_path)
+
+        if (not os.path.exists(arch_dir_path)):
+            os.makedirs(arch_dir_path)
 
         if not (os.path.exists(csv_dataset_path)):
             with zipfile.ZipFile(interview_dataset_path, 'r') as zip_ref:
-                print("extract")
+                print("extracting csv files from zip file")
                 zip_ref.extractall(tmp_dir_path)
         
         df_appended = self.load_dataframe_from_csv(csv_dataset_path)
@@ -114,15 +98,15 @@ class Command(BaseCommand):
         summary_entity['class_id'] = summary_entity['class_id'].map(class_entity.set_index('class_name')['id'])
         summary_entity.insert(0 , 'id' , range(1, 1 + len(summary_entity)))
           
-        conn = connect("db.sqlite3")
-        summary_entity.to_sql('data_viz_summary' , conn,if_exists='replace' , index=False)
-        answer_entity.to_sql('data_viz_answers' , conn,if_exists='replace' , index=False)
-        student_entity.to_sql('data_viz_student' , conn,if_exists='replace' , index=False)
-        school_entity.to_sql('data_viz_school' , conn,if_exists='replace' , index=False)
-        class_entity.to_sql('data_viz_class' , conn,if_exists='replace' , index=False)
-        assessment_area_entity.to_sql('data_viz_assessment_areas' , conn,if_exists='replace' , index=False)
-        award_entity.to_sql('data_viz_award' , conn,if_exists='replace' , index=False)
-        subject_entity.to_sql('data_viz_subject' , conn,if_exists='replace' , index=False)
+
+        summary_entity.to_csv(os.path.join(arch_dir_path,'summary_archive'),compression="gzip",index=False)
+        student_entity.to_csv(os.path.join(arch_dir_path,'student_archive'),compression="gzip",index=False)
+        class_entity.to_csv(os.path.join(arch_dir_path,'class_archive'),compression="gzip",index=False)
+        answer_entity.to_csv(os.path.join(arch_dir_path,'answers_archive'),compression="gzip",index=False)
+        assessment_area_entity.to_csv(os.path.join(arch_dir_path,'assessment_area_archive'),compression="gzip",index=False)
+        subject_entity.to_csv(os.path.join(arch_dir_path,'subjects_archive'),compression="gzip",index=False)
+        award_entity.to_csv(os.path.join(arch_dir_path,'award_archive'),compression="gzip",index=False)
+        school_entity.to_csv(os.path.join(arch_dir_path,'schools_archive'),compression="gzip",index=False)
 
         
     def load_dataframe_from_csv(self,csv_files_parent_dir):
