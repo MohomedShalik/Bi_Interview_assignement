@@ -1,23 +1,36 @@
 from django.core.management.base import BaseCommand
 
-import urllib.request
+
 import zipfile
 import pandas as pd 
 from sqlite3 import connect
 import os
 import pathlib
+from dotenv import load_dotenv
 
 
 class Command(BaseCommand):
 
-    def add_arguments(self, parser):
-        parser.add_argument("zip_file_path", type=str)
+    # def add_arguments(self, parser):
+    #     parser.add_argument("zip_file_path", type=str)
 
     def handle(self , *args , **options):
+        dotenv_path = pathlib.Path('.env')
+        load_dotenv(dotenv_path=dotenv_path)
+
+        zipfile_path = os.getenv('ZIP_FILE_PATH')
+        print(zipfile_path)
+
+        sp = os.path.join(os.path.expanduser("~/") , zipfile_path)
+        print(sp)
+        if (os.path.exists(sp)):
+            print("file exist")
 
         tmp_dir_path = os.path.join(os.getcwd(), "tmp")
         # interview_dataset_path = os.path.join(tmp_dir_path,"interview_dataset.zip")
-        interview_dataset_path = pathlib.Path(options["zip_file_path"])
+        # interview_dataset_path = pathlib.Path(options["zip_file_path"])
+
+        interview_dataset_path = zipfile_path
         print(interview_dataset_path)
         csv_dataset_path = os.path.join(tmp_dir_path,"Ganison_dataset")
         print(interview_dataset_path)
