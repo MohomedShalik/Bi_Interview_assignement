@@ -1,0 +1,17 @@
+services:
+
+  src:
+    build: ./src
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/src
+    command: bash -c "python manage.py migrate && python manage.py processcsv ~/dev/tmp/Interview_dataset.zip && python manage.py runserver 0.0.0.0:8000"
+  
+  web:
+    build: ./data_viz_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - "/data_viz_frontend/node_modules"
+      - ./data_viz_frontend:/data_viz_frontend
